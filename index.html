@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📋Aesthetic Digital Planner - 2026 Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Playfair Display for gorgeous serif headings & Inter for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- FontAwesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        plannerBg: '#f4f0ec',
+                        cardBg: '#fffdf9',
+                        plannerBrown: '#4a3b32',
+                        plannerBorder: '#d4c5b9',
+                        plannerMuted: '#8c7a6b',
+                        plannerAccent: '#e6dfd5'
+                    },
+                    fontFamily: {
+                        serif: ['"Playfair Display"', 'serif'],
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #f4f0ec;
+            color: #4a3b32;
+            font-family: 'Inter', sans-serif;
+        }
+        .serif-title {
+            font-family: 'Playfair Display', serif;
+            letter-spacing: 0.05em;
+        }
+        .planner-border {
+            border: 1px solid #d4c5b9;
+        }
+        .dotted-line {
+            border-bottom: 1px dashed #d4c5b9;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f4f0ec;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4c5b9;
+            border-radius: 3px;
+        }
+        @media print {
+            body {
+                background: white !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+    <header class="no-print bg-[#fffdf9] border-b border-[#d4c5b9] px-6 py-4 flex flex-col md:flex-row items-center justify-between sticky top-0 z-50 shadow-sm">
+        <div class="flex items-center space-x-3 mb-3 md:mb-0">
+            <span class="text-xl text-[#4a3b32]"><i class="fa-solid fa-sparkles"></i></span>
+            <h1 class="serif-title text-xl md:text-2xl font-bold tracking-wider">ATELIER PLANNER</h1>
+        </div>
+        
+        <!-- Tab Navigation -->
+        <nav class="flex flex-wrap gap-2 justify-center">
+            <button onclick="switchTab('monthly')" id="tab-btn-monthly" class="px-4 py-2 text-sm font-medium rounded transition-all bg-[#4a3b32] text-[#fffdf9] shadow-sm">
+                <i class="fa-solid fa-calendar-days mr-1.5"></i> Monthly
+            </button>
+            <button onclick="switchTab('weekly')" id="tab-btn-weekly" class="px-4 py-2 text-sm font-medium rounded transition-all text-[#4a3b32] hover:bg-[#e6dfd5]">
+                <i class="fa-solid fa-calendar-week mr-1.5"></i> Weekly
+            </button>
+            <button onclick="switchTab('todo')" id="tab-btn-todo" class="px-4 py-2 text-sm font-medium rounded transition-all text-[#4a3b32] hover:bg-[#e6dfd5]">
+                <i class="fa-solid fa-list-check mr-1.5"></i> To Do List
+            </button>
+            <button onclick="switchTab('journal')" id="tab-btn-journal" class="px-4 py-2 text-sm font-medium rounded transition-all text-[#4a3b32] hover:bg-[#e6dfd5]">
+                <i class="fa-solid fa-book-open mr-1.5"></i> Daily Journal
+            </button>
+        </nav>
+
+        <div class="flex items-center space-x-2 mt-3 md:mt-0">
+            <button onclick="window.print()" title="Print / Export PDF" class="px-3 py-2 text-xs uppercase tracking-wider font-semibold border border-[#4a3b32] rounded hover:bg-[#4a3b32] hover:text-white transition-all">
+                <i class="fa-solid fa-print mr-1"></i> Print
+            </button>
+            <button onclick="resetCurrentData()" title="Reset current tab data" class="px-3 py-2 text-xs uppercase tracking-wider font-semibold border border-red-300 text-red-700 rounded hover:bg-red-50 transition-all">
+                <i class="fa-solid fa-rotate-right mr-1"></i> Reset
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-6xl w-full mx-auto p-4 md:p-8">
+
+        <div id="view-monthly" class="planner-view bg-[#fffdf9] planner-border p-6 md:p-10 shadow-sm rounded-lg relative">
+            <div class="text-center border-b-2 border-[#4a3b32] pb-6 mb-6">
+                <div class="text-xs tracking-[0.3em] uppercase text-[#8c7a6b] mb-1"><i class="fa-solid fa-sparkles text-xs"></i> 2026 EDITION</div>
+                <h2 class="serif-title text-4xl md:text-5xl font-bold uppercase tracking-widest text-[#4a3b32]">Monthly Planner</h2>
+            </div>
+
+            <!-- Month & Year Selector -->
+            <div class="grid grid-cols-1 md:grid-cols-2 planner-border mb-6 text-sm font-medium bg-[#f4f0ec]">
+                <div class="p-3 border-b md:border-b-0 md:border-r border-[#d4c5b9] flex items-center space-x-3">
+                    <span class="uppercase tracking-wider font-semibold text-[#8c7a6b]">MONTH :</span>
+                    <select id="monthly-month-select" onchange="onMonthOrYearChanged()" class="bg-transparent flex-1 focus:outline-none font-semibold text-[#4a3b32] cursor-pointer">
+                        <option value="0">January</option><option value="1">February</option><option value="2">March</option><option value="3">April</option>
+                        <option value="4">May</option><option value="5">June</option><option value="6">July</option><option value="7">August</option>
+                        <option value="8">September</option><option value="9" selected>October</option><option value="10">November</option><option value="11">December</option>
+                    </select>
+                </div>
+                <div class="p-3 flex items-center space-x-3">
+                    <span class="uppercase tracking-wider font-semibold text-[#8c7a6b]">YEAR :</span>
+                    <input type="number" id="monthly-year-input" value="2026" oninput="onMonthOrYearChanged()" class="bg-transparent flex-1 focus:outline-none font-semibold text-[#4a3b32]">
+                </div>
+            </div>
+
+            <!-- Calendar Grid (Mon-Sun) -->
+            <div class="planner-border mb-8 overflow-x-auto">
+                <div class="grid grid-cols-7 bg-[#e6dfd5] text-center font-semibold text-xs md:text-sm tracking-widest text-[#4a3b32] border-b border-[#d4c5b9]">
+                    <div class="py-3 border-r border-[#d4c5b9]">MON</div>
+                    <div class="py-3 border-r border-[#d4c5b9]">TUE</div>
+                    <div class="py-3 border-r border-[#d4c5b9]">WED</div>
+                    <div class="py-3 border-r border-[#d4c5b9]">THU</div>
+                    <div class="py-3 border-r border-[#d4c5b9]">FRI</div>
+                    <div class="py-3 border-r border-[#d4c5b9]">SAT</div>
+                    <div class="py-3">SUN</div>
+                </div>
+                <!-- Generated Days -->
+                <div id="monthly-days-grid" class="grid grid-cols-7 bg-[#fffdf9]"></div>
+            </div>
+
+            <!-- Bottom: To Do List & Notes -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="planner-border p-5 bg-[#fffdf9]">
+                    <h3 class="serif-title font-bold text-lg mb-4 tracking-wide uppercase border-b border-[#d4c5b9] pb-2 text-[#4a3b32]">To Do List</h3>
+                    <div id="monthly-todo-container" class="space-y-3"></div>
+                    <button onclick="addMonthlyTodoItem()" class="mt-4 text-xs font-semibold uppercase tracking-wider text-[#8c7a6b] hover:text-[#4a3b32]">
+                        <i class="fa-solid fa-plus mr-1"></i> Add Task
+                    </button>
+                </div>
+
+                <div class="planner-border p-5 bg-[#fffdf9] flex flex-col">
+                    <h3 class="serif-title font-bold text-lg mb-4 tracking-wide uppercase border-b border-[#d4c5b9] pb-2 text-[#4a3b32]">Notes</h3>
+                    <textarea id="monthly-notes" oninput="saveMonthlyData()" placeholder="Monthly reflections and notes..." class="w-full flex-1 min-h-[140px] bg-transparent resize-none focus:outline-none text-sm leading-relaxed text-[#4a3b32] placeholder-[#8c7a6b]/50"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-weekly" class="planner-view hidden bg-[#fffdf9] planner-border p-6 md:p-10 shadow-sm rounded-lg relative">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end border-b-2 border-[#4a3b32] pb-6 mb-6">
+                <div>
+                    <h2 class="serif-title text-4xl md:text-6xl font-bold lowercase tracking-tight text-[#4a3b32]">weekly planner</h2>
+                </div>
+                <div class="flex flex-wrap gap-4 mt-4 md:mt-0 text-sm font-medium">
+                    <div class="flex items-center space-x-2">
+                        <span class="tracking-wider text-[#8c7a6b]">Week (</span>
+                        <input type="text" id="weekly-week-num" value="41" oninput="saveWeeklyData()" class="w-10 text-center bg-transparent dotted-line focus:outline-none font-semibold">
+                        <span class="tracking-wider text-[#8c7a6b]">)</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="tracking-wider text-[#8c7a6b]">Dates (</span>
+                        <input type="text" id="weekly-dates-range" value="Oct 05 - Oct 11" oninput="saveWeeklyData()" class="w-36 text-center bg-transparent dotted-line focus:outline-none font-semibold">
+                        <span class="tracking-wider text-[#8c7a6b]">)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Goals & Deadlines -->
+            <div class="grid grid-cols-1 md:grid-cols-2 planner-border mb-6 bg-[#fffdf9]">
+                <div class="p-4 border-b md:border-b-0 md:border-r border-[#d4c5b9]">
+                    <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">Top 3 Goals</h4>
+                    <textarea id="weekly-goals" oninput="saveWeeklyData()" placeholder="1. &#10;2. &#10;3. " class="w-full h-24 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="p-4">
+                    <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">Top 3 Important Dates & Deadlines</h4>
+                    <textarea id="weekly-deadlines" oninput="saveWeeklyData()" placeholder="1. &#10;2. &#10;3. " class="w-full h-24 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+            </div>
+
+            <!-- Days Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Monday</span>
+                    <textarea id="weekly-mon" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Friday</span>
+                    <textarea id="weekly-fri" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Tuesday</span>
+                    <textarea id="weekly-tue" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Saturday</span>
+                    <textarea id="weekly-sat" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Wednesday</span>
+                    <textarea id="weekly-wed" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Sunday</span>
+                    <textarea id="weekly-sun" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Thursday</span>
+                    <textarea id="weekly-thu" oninput="saveWeeklyData()" placeholder="Schedule & tasks..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+                <div class="planner-border p-4 bg-[#fffdf9] min-h-[160px] flex flex-col">
+                    <span class="font-bold text-sm tracking-wide uppercase border-b border-[#d4c5b9] pb-1 mb-2 text-[#4a3b32]">Notes</span>
+                    <textarea id="weekly-notes" oninput="saveWeeklyData()" placeholder="Weekly reflections..." class="w-full flex-1 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-todo" class="planner-view hidden bg-[#fffdf9] planner-border p-6 md:p-10 shadow-sm rounded-lg relative max-w-4xl mx-auto">
+            <div class="border border-[#d4c5b9] p-6 md:p-8 rounded-sm">
+                <div class="bg-[#e6dfd5] py-4 text-center mb-6">
+                    <h2 class="serif-title text-3xl md:text-4xl font-bold tracking-widest uppercase text-[#4a3b32]">TO DO LIST</h2>
+                </div>
+
+                <div class="flex flex-col sm:flex-row justify-between items-center mb-8 text-sm font-medium gap-4">
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <span class="uppercase tracking-wider text-[#8c7a6b]">MONTH</span>
+                        <input type="text" id="todo-view-month" value="October" oninput="saveTodoViewData()" class="flex-1 sm:w-48 dotted-line bg-transparent focus:outline-none font-semibold text-center">
+                    </div>
+                    <div class="flex items-center space-x-3 w-full sm:w-auto">
+                        <span class="uppercase tracking-wider text-[#8c7a6b]">DATE</span>
+                        <input type="text" id="todo-view-date" value="10.10.2026" oninput="saveTodoViewData()" class="flex-1 sm:w-48 dotted-line bg-transparent focus:outline-none font-semibold text-center">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <div class="bg-[#e6dfd5]/60 py-2 px-4 mb-4 rounded-t">
+                            <h3 class="serif-title font-bold text-sm tracking-wider uppercase text-[#4a3b32]">TO DO</h3>
+                        </div>
+                        <div id="todo-checklist-container" class="space-y-3"></div>
+                        <button onclick="addTodoListItem()" class="mt-3 text-xs font-semibold uppercase tracking-wider text-[#8c7a6b] hover:text-[#4a3b32]">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Checklist Item
+                        </button>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <div class="bg-[#e6dfd5]/60 py-2 px-4 mb-4 rounded-t">
+                                <h3 class="serif-title font-bold text-sm tracking-wider uppercase text-[#4a3b32]">PRIORITIES</h3>
+                            </div>
+                            <div id="todo-priorities-container" class="space-y-3"></div>
+                            <button onclick="addPriorityItem()" class="mt-3 text-xs font-semibold uppercase tracking-wider text-[#8c7a6b] hover:text-[#4a3b32]">
+                                <i class="fa-solid fa-plus mr-1"></i> Add Priority
+                            </button>
+                        </div>
+
+                        <div>
+                            <span class="block font-bold text-xs uppercase tracking-widest text-[#8c7a6b] mb-2">NOTES</span>
+                            <div class="planner-border p-3 bg-[#fffdf9] rounded">
+                                <textarea id="todo-notes-box" oninput="saveTodoViewData()" placeholder="Jot down notes here..." class="w-full h-24 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                            </div>
+                        </div>
+
+                        <div>
+                            <span class="block font-bold text-xs uppercase tracking-widest text-[#8c7a6b] mb-2">REMINDER</span>
+                            <div class="planner-border p-3 bg-[#fffdf9] rounded">
+                                <textarea id="todo-reminder-box" oninput="saveTodoViewData()" placeholder="Important reminders..." class="w-full h-24 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="view-journal" class="planner-view hidden bg-[#fffdf9] planner-border p-6 md:p-10 shadow-sm rounded-lg relative max-w-4xl mx-auto">
+            <div class="text-center border-b border-[#4a3b32] pb-6 mb-6">
+                <h2 class="serif-title text-3xl md:text-5xl font-bold tracking-widest uppercase text-[#4a3b32]">DAILY 5 MINUTE JOURNAL</h2>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-center border-b border-[#d4c5b9] pb-4 mb-6 text-sm font-medium gap-4">
+                <div class="flex items-center space-x-3 w-full sm:w-auto">
+                    <span class="uppercase tracking-wider font-semibold text-[#8c7a6b]">DATE :</span>
+                    <input type="text" id="journal-date" value="October 10, 2026" oninput="saveJournalData()" class="flex-1 sm:w-56 dotted-line bg-transparent focus:outline-none font-semibold">
+                </div>
+                <!-- Day selector M T W T F S S -->
+                <div class="flex items-center space-x-2 text-xs md:text-sm font-semibold tracking-widest">
+                    <span class="text-[#8c7a6b] mr-2">DAY:</span>
+                    <button onclick="setJournalDay('M')" id="jday-M" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">M</button>
+                    <button onclick="setJournalDay('T')" id="jday-T" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">T</button>
+                    <button onclick="setJournalDay('W')" id="jday-W" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">W</button>
+                    <button onclick="setJournalDay('Th')" id="jday-Th" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">T</button>
+                    <button onclick="setJournalDay('F')" id="jday-F" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">F</button>
+                    <button onclick="setJournalDay('S')" id="jday-S" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">S</button>
+                    <button onclick="setJournalDay('Su')" id="jday-Su" class="w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all">S</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Left Column -->
+                <div class="space-y-6">
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2 text-center">MY MOOD</h4>
+                        <input type="text" id="journal-mood" value="✨ Inspired & Focused" oninput="saveJournalData()" class="w-full text-center bg-transparent focus:outline-none font-semibold text-[#4a3b32]">
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">CURRENTLY INSPIRED BY</h4>
+                        <textarea id="journal-inspired" oninput="saveJournalData()" placeholder="What or who is inspiring you today..." class="w-full h-20 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">TODAY'S PURPOSE</h4>
+                        <textarea id="journal-purpose" oninput="saveJournalData()" placeholder="Your core intention for today..." class="w-full h-20 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">DAILY AFFIRMATION</h4>
+                        <textarea id="journal-affirmation" oninput="saveJournalData()" placeholder="I am capable, calm, and ready..." class="w-full h-20 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">DAILY MOVEMENT</h4>
+                        <textarea id="journal-movement" oninput="saveJournalData()" placeholder="Stretching, walking, yoga..." class="w-full h-20 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-3">3 THINGS I'M GRATEFUL FOR</h4>
+                        <div class="space-y-2">
+                            <input type="text" id="journal-gratitude-1" oninput="saveJournalData()" placeholder="1. " class="w-full dotted-line bg-transparent focus:outline-none text-sm py-1 text-[#4a3b32]">
+                            <input type="text" id="journal-gratitude-2" oninput="saveJournalData()" placeholder="2. " class="w-full dotted-line bg-transparent focus:outline-none text-sm py-1 text-[#4a3b32]">
+                            <input type="text" id="journal-gratitude-3" oninput="saveJournalData()" placeholder="3. " class="w-full dotted-line bg-transparent focus:outline-none text-sm py-1 text-[#4a3b32]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="space-y-6 flex flex-col">
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2 text-center">DAILY GOAL</h4>
+                        <textarea id="journal-daily-goal" oninput="saveJournalData()" placeholder="Primary objective for today..." class="w-full h-16 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+
+                    <div class="planner-border p-5 bg-[#fffdf9] flex-1 flex flex-col">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-4 text-center">BRAIN DUMP</h4>
+                        <div id="journal-braindump-lines" class="space-y-3 flex-1"></div>
+                    </div>
+
+                    <div class="planner-border p-4 bg-[#fffdf9]">
+                        <h4 class="text-xs uppercase tracking-widest font-bold text-[#8c7a6b] mb-2">END OF DAY REFLECTION</h4>
+                        <textarea id="journal-reflection" oninput="saveJournalData()" placeholder="How did today go? What did you learn?" class="w-full h-24 bg-transparent resize-none focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="no-print text-center py-6 text-xs text-[#8c7a6b] tracking-wider border-t border-[#d4c5b9] mt-auto">
+        ATELIER DIGITAL PLANNER &bull; 2026 EDITION
+    </footer>
+
+    <script>
+        let currentTab = 'monthly';
+
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.querySelectorAll('.planner-view').forEach(el => el.classList.add('hidden'));
+            document.getElementById('view-' + tabName).classList.remove('hidden');
+
+            ['monthly', 'weekly', 'todo', 'journal'].forEach(t => {
+                const btn = document.getElementById('tab-btn-' + t);
+                if (t === tabName) {
+                    btn.className = 'px-4 py-2 text-sm font-medium rounded transition-all bg-[#4a3b32] text-[#fffdf9] shadow-sm';
+                } else {
+                    btn.className = 'px-4 py-2 text-sm font-medium rounded transition-all text-[#4a3b32] hover:bg-[#e6dfd5]';
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // --- 1. MONTHLY PLANNER LOGIC (Up-to-date for 2026 / current date) ---
+        function renderMonthlyCalendar(year, month, savedCellData = {}) {
+            const grid = document.getElementById('monthly-days-grid');
+            grid.innerHTML = '';
+
+            // Get first day of month (0 = Sunday, 1 = Monday, etc.)
+            const firstDayDate = new Date(year, month, 1);
+            let startIndex = firstDayDate.getDay() - 1; // Mon = 0
+            if (startIndex === -1) startIndex = 6; // Sunday becomes index 6
+
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+            // Total grid cells: usually 35 (5 rows) or 42 (6 rows)
+            const totalCells = (startIndex + daysInMonth > 35) ? 42 : 35;
+
+            for (let i = 0; i < totalCells; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'min-h-[110px] p-2 border-r border-b border-[#d4c5b9] flex flex-col bg-[#fffdf9] hover:bg-[#f4f0ec]/30 transition-colors relative';
+                
+                const dayNumSpan = document.createElement('span');
+                dayNumSpan.className = 'text-xs font-semibold mb-1';
+                
+                let dayNumber = '';
+                let isCurrentMonth = true;
+
+                if (i < startIndex) {
+                    // Previous month overflow
+                    dayNumber = daysInPrevMonth - startIndex + i + 1;
+                    dayNumSpan.className += ' text-[#8c7a6b]/40';
+                    isCurrentMonth = false;
+                } else if (i >= startIndex + daysInMonth) {
+                    // Next month overflow
+                    dayNumber = i - (startIndex + daysInMonth) + 1;
+                    dayNumSpan.className += ' text-[#8c7a6b]/40';
+                    isCurrentMonth = false;
+                } else {
+                    // Current month
+                    dayNumber = i - startIndex + 1;
+                    dayNumSpan.className += ' text-[#8c7a6b]';
+                    
+                    // Highlight today if matching current actual date (Oct 10, 2026)
+                    const now = new Date();
+                    if (year === now.getFullYear() && month === now.getMonth() && dayNumber === now.getDate()) {
+                        dayNumSpan.className += ' bg-[#4a3b32] text-white px-1.5 py-0.5 rounded-full inline-block text-[10px]';
+                    }
+                }
+
+                dayNumSpan.innerText = dayNumber;
+
+                const textarea = document.createElement('textarea');
+                textarea.className = 'w-full flex-1 bg-transparent resize-none focus:outline-none text-xs text-[#4a3b32] placeholder-[#8c7a6b]/30';
+                textarea.id = `monthly-cell-${i}`;
+                if (savedCellData[i]) {
+                    textarea.value = savedCellData[i];
+                }
+                textarea.oninput = saveMonthlyData;
+
+                cell.appendChild(dayNumSpan);
+                cell.appendChild(textarea);
+                grid.appendChild(cell);
+            }
+        }
+
+        function onMonthOrYearChanged() {
+            const year = parseInt(document.getElementById('monthly-year-input').value) || 2026;
+            const month = parseInt(document.getElementById('monthly-month-select').value);
+            
+            // Collect existing cell data before re-rendering
+            const existingData = {};
+            for (let i = 0; i < 42; i++) {
+                const el = document.getElementById(`monthly-cell-${i}`);
+                if (el && el.value) existingData[i] = el.value;
+            }
+
+            renderMonthlyCalendar(year, month, existingData);
+            saveMonthlyData();
+        }
+
+        function initMonthlyTodoList() {
+            const container = document.getElementById('monthly-todo-container');
+            container.innerHTML = '';
+            for (let i = 0; i < 4; i++) {
+                createTodoRow(container, i, '', false, saveMonthlyData);
+            }
+        }
+
+        function addMonthlyTodoItem() {
+            const container = document.getElementById('monthly-todo-container');
+            createTodoRow(container, container.children.length, '', false, saveMonthlyData);
+            saveMonthlyData();
+        }
+
+        function createTodoRow(container, index, text = '', checked = false, saveCallback = null) {
+            const row = document.createElement('div');
+            row.className = 'flex items-center space-x-3 dotted-line pb-2';
+            
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = checked;
+            checkbox.className = 'w-4 h-4 accent-[#4a3b32] cursor-pointer rounded';
+            checkbox.onchange = () => {
+                textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+                textInput.style.opacity = checkbox.checked ? '0.5' : '1';
+                if (saveCallback) saveCallback();
+            };
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.value = text;
+            textInput.placeholder = 'Add to do item...';
+            textInput.className = 'flex-1 bg-transparent focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/40';
+            if (checked) {
+                textInput.style.textDecoration = 'line-through';
+                textInput.style.opacity = '0.5';
+            }
+            if (saveCallback) textInput.oninput = saveCallback;
+
+            row.appendChild(checkbox);
+            row.appendChild(textInput);
+            container.appendChild(row);
+        }
+
+        function saveMonthlyData() {
+            const data = {
+                month: document.getElementById('monthly-month-select').value,
+                year: document.getElementById('monthly-year-input').value,
+                notes: document.getElementById('monthly-notes').value,
+                cells: {},
+                todos: []
+            };
+
+            for (let i = 0; i < 42; i++) {
+                const el = document.getElementById(`monthly-cell-${i}`);
+                if (el && el.value) data.cells[i] = el.value;
+            }
+
+            const container = document.getElementById('monthly-todo-container');
+            container.querySelectorAll('.flex').forEach(row => {
+                const cb = row.querySelector('input[type="checkbox"]');
+                const txt = row.querySelector('input[type="text"]');
+                if (txt) {
+                    data.todos.push({ text: txt.value, checked: cb ? cb.checked : false });
+                }
+            });
+
+            localStorage.setItem('atelier_monthly_2026', JSON.stringify(data));
+        }
+
+        function loadMonthlyData() {
+            const saved = localStorage.getItem('atelier_monthly_2026');
+            let year = 2026;
+            let month = 9; // October
+            let cellData = {};
+            let notes = '';
+            let todos = [];
+
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.month !== undefined) month = parseInt(data.month);
+                    if (data.year !== undefined) year = parseInt(data.year);
+                    if (data.notes !== undefined) notes = data.notes;
+                    if (data.cells !== undefined) cellData = data.cells;
+                    if (data.todos !== undefined) todos = data.todos;
+
+                    document.getElementById('monthly-month-select').value = month;
+                    document.getElementById('monthly-year-input').value = year;
+                    document.getElementById('monthly-notes').value = notes;
+                } catch(e) { console.error(e); }
+            }
+
+            renderMonthlyCalendar(year, month, cellData);
+
+            if (todos.length > 0) {
+                const container = document.getElementById('monthly-todo-container');
+                container.innerHTML = '';
+                todos.forEach(item => createTodoRow(container, 0, item.text, item.checked, saveMonthlyData));
+            } else {
+                initMonthlyTodoList();
+            }
+        }
+
+        // --- 2. WEEKLY PLANNER LOGIC ---
+        function saveWeeklyData() {
+            const data = {
+                week: document.getElementById('weekly-week-num').value,
+                dates: document.getElementById('weekly-dates-range').value,
+                goals: document.getElementById('weekly-goals').value,
+                deadlines: document.getElementById('weekly-deadlines').value,
+                mon: document.getElementById('weekly-mon').value,
+                tue: document.getElementById('weekly-tue').value,
+                wed: document.getElementById('weekly-wed').value,
+                thu: document.getElementById('weekly-thu').value,
+                fri: document.getElementById('weekly-fri').value,
+                sat: document.getElementById('weekly-sat').value,
+                sun: document.getElementById('weekly-sun').value,
+                notes: document.getElementById('weekly-notes').value
+            };
+            localStorage.setItem('atelier_weekly_2026', JSON.stringify(data));
+        }
+
+        function loadWeeklyData() {
+            const saved = localStorage.getItem('atelier_weekly_2026');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                if (data.week) document.getElementById('weekly-week-num').value = data.week;
+                if (data.dates) document.getElementById('weekly-dates-range').value = data.dates;
+                if (data.goals) document.getElementById('weekly-goals').value = data.goals;
+                if (data.deadlines) document.getElementById('weekly-deadlines').value = data.deadlines;
+                if (data.mon) document.getElementById('weekly-mon').value = data.mon;
+                if (data.tue) document.getElementById('weekly-tue').value = data.tue;
+                if (data.wed) document.getElementById('weekly-wed').value = data.wed;
+                if (data.thu) document.getElementById('weekly-thu').value = data.thu;
+                if (data.fri) document.getElementById('weekly-fri').value = data.fri;
+                if (data.sat) document.getElementById('weekly-sat').value = data.sat;
+                if (data.sun) document.getElementById('weekly-sun').value = data.sun;
+                if (data.notes) document.getElementById('weekly-notes').value = data.notes;
+            } catch(e) { console.error(e); }
+        }
+
+        // --- 3. TO DO LIST VIEW LOGIC ---
+        function initTodoViewLists() {
+            const todoContainer = document.getElementById('todo-checklist-container');
+            todoContainer.innerHTML = '';
+            for (let i = 0; i < 16; i++) {
+                createChecklistRow(todoContainer, '', false, saveTodoViewData);
+            }
+
+            const priorityContainer = document.getElementById('todo-priorities-container');
+            priorityContainer.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                createChecklistRow(priorityContainer, '', false, saveTodoViewData);
+            }
+        }
+
+        function addTodoListItem() {
+            const container = document.getElementById('todo-checklist-container');
+            createChecklistRow(container, '', false, saveTodoViewData);
+            saveTodoViewData();
+        }
+
+        function addPriorityItem() {
+            const container = document.getElementById('todo-priorities-container');
+            createChecklistRow(container, '', false, saveTodoViewData);
+            saveTodoViewData();
+        }
+
+        function createChecklistRow(container, text = '', checked = false, saveCallback = null) {
+            const row = document.createElement('div');
+            row.className = 'flex items-center space-x-3 dotted-line pb-2 mb-1';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = checked;
+            checkbox.className = 'w-4 h-4 accent-[#4a3b32] cursor-pointer rounded';
+            checkbox.onchange = () => {
+                textInput.style.textDecoration = checkbox.checked ? 'line-through' : 'none';
+                textInput.style.opacity = checkbox.checked ? '0.5' : '1';
+                if (saveCallback) saveCallback();
+            };
+
+            const textInput = document.createElement('input');
+            textInput.type = 'text';
+            textInput.value = text;
+            textInput.placeholder = '...';
+            textInput.className = 'flex-1 bg-transparent focus:outline-none text-sm text-[#4a3b32] placeholder-[#8c7a6b]/30';
+            if (checked) {
+                textInput.style.textDecoration = 'line-through';
+                textInput.style.opacity = '0.5';
+            }
+            if (saveCallback) textInput.oninput = saveCallback;
+
+            row.appendChild(checkbox);
+            row.appendChild(textInput);
+            container.appendChild(row);
+        }
+
+        function saveTodoViewData() {
+            const todos = [];
+            document.querySelectorAll('#todo-checklist-container .flex').forEach(row => {
+                const cb = row.querySelector('input[type="checkbox"]');
+                const txt = row.querySelector('input[type="text"]');
+                if (txt) todos.push({ text: txt.value, checked: cb ? cb.checked : false });
+            });
+
+            const priorities = [];
+            document.querySelectorAll('#todo-priorities-container .flex').forEach(row => {
+                const cb = row.querySelector('input[type="checkbox"]');
+                const txt = row.querySelector('input[type="text"]');
+                if (txt) priorities.push({ text: txt.value, checked: cb ? cb.checked : false });
+            });
+
+            const data = {
+                month: document.getElementById('todo-view-month').value,
+                date: document.getElementById('todo-view-date').value,
+                notes: document.getElementById('todo-notes-box').value,
+                reminder: document.getElementById('todo-reminder-box').value,
+                todos: todos,
+                priorities: priorities
+            };
+
+            localStorage.setItem('atelier_todoview_2026', JSON.stringify(data));
+        }
+
+        function loadTodoViewData() {
+            const saved = localStorage.getItem('atelier_todoview_2026');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                if (data.month) document.getElementById('todo-view-month').value = data.month;
+                if (data.date) document.getElementById('todo-view-date').value = data.date;
+                if (data.notes) document.getElementById('todo-notes-box').value = data.notes;
+                if (data.reminder) document.getElementById('todo-reminder-box').value = data.reminder;
+
+                if (data.todos && data.todos.length > 0) {
+                    const container = document.getElementById('todo-checklist-container');
+                    container.innerHTML = '';
+                    data.todos.forEach(item => createChecklistRow(container, item.text, item.checked, saveTodoViewData));
+                }
+
+                if (data.priorities && data.priorities.length > 0) {
+                    const container = document.getElementById('todo-priorities-container');
+                    container.innerHTML = '';
+                    data.priorities.forEach(item => createChecklistRow(container, item.text, item.checked, saveTodoViewData));
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // --- 4. DAILY JOURNAL VIEW LOGIC ---
+        let selectedJournalDay = 'F'; // Friday, Oct 10, 2026
+
+        function setJournalDay(day) {
+            selectedJournalDay = day;
+            ['M', 'T', 'W', 'Th', 'F', 'S', 'Su'].forEach(d => {
+                const btn = document.getElementById('jday-' + d);
+                if (btn) {
+                    if (d === day) {
+                        btn.className = 'w-7 h-7 rounded-full border border-[#4a3b32] bg-[#4a3b32] text-[#fffdf9] flex items-center justify-center transition-all';
+                    } else {
+                        btn.className = 'w-7 h-7 rounded-full border border-[#d4c5b9] flex items-center justify-center hover:bg-[#e6dfd5] transition-all';
+                    }
+                }
+            });
+            saveJournalData();
+        }
+
+        function initJournalBrainDump() {
+            const container = document.getElementById('journal-braindump-lines');
+            container.innerHTML = '';
+            for (let i = 0; i < 11; i++) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'w-full dotted-line bg-transparent focus:outline-none text-sm py-1.5 text-[#4a3b32] placeholder-[#8c7a6b]/30';
+                input.placeholder = '';
+                input.id = 'journal-bd-' + i;
+                input.oninput = saveJournalData;
+                container.appendChild(input);
+            }
+        }
+
+        function saveJournalData() {
+            const braindump = {};
+            for (let i = 0; i < 11; i++) {
+                const el = document.getElementById('journal-bd-' + i);
+                if (el) braindump[i] = el.value;
+            }
+
+            const data = {
+                date: document.getElementById('journal-date').value,
+                day: selectedJournalDay,
+                mood: document.getElementById('journal-mood').value,
+                inspired: document.getElementById('journal-inspired').value,
+                purpose: document.getElementById('journal-purpose').value,
+                affirmation: document.getElementById('journal-affirmation').value,
+                movement: document.getElementById('journal-movement').value,
+                g1: document.getElementById('journal-gratitude-1').value,
+                g2: document.getElementById('journal-gratitude-2').value,
+                g3: document.getElementById('journal-gratitude-3').value,
+                dailyGoal: document.getElementById('journal-daily-goal').value,
+                reflection: document.getElementById('journal-reflection').value,
+                braindump: braindump
+            };
+
+            localStorage.setItem('atelier_journal_2026', JSON.stringify(data));
+        }
+
+        function loadJournalData() {
+            const saved = localStorage.getItem('atelier_journal_2026');
+            if (!saved) return;
+            try {
+                const data = JSON.parse(saved);
+                if (data.date) document.getElementById('journal-date').value = data.date;
+                if (data.day) setJournalDay(data.day);
+                if (data.mood) document.getElementById('journal-mood').value = data.mood;
+                if (data.inspired) document.getElementById('journal-inspired').value = data.inspired;
+                if (data.purpose) document.getElementById('journal-purpose').value = data.purpose;
+                if (data.affirmation) document.getElementById('journal-affirmation').value = data.affirmation;
+                if (data.movement) document.getElementById('journal-movement').value = data.movement;
+                if (data.g1) document.getElementById('journal-gratitude-1').value = data.g1;
+                if (data.g2) document.getElementById('journal-gratitude-2').value = data.g2;
+                if (data.g3) document.getElementById('journal-gratitude-3').value = data.g3;
+                if (data.dailyGoal) document.getElementById('journal-daily-goal').value = data.dailyGoal;
+                if (data.reflection) document.getElementById('journal-reflection').value = data.reflection;
+
+                if (data.braindump) {
+                    for (let i = 0; i < 11; i++) {
+                        const el = document.getElementById('journal-bd-' + i);
+                        if (el && data.braindump[i] !== undefined) el.value = data.braindump[i];
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        // --- RESET DATA ---
+        function resetCurrentData() {
+            if (confirm('Are you sure you want to clear data for this current tab?')) {
+                if (currentTab === 'monthly') {
+                    localStorage.removeItem('atelier_monthly_2026');
+                    loadMonthlyData();
+                } else if (currentTab === 'weekly') {
+                    localStorage.removeItem('atelier_weekly_2026');
+                    ['weekly-goals', 'weekly-deadlines', 'weekly-mon', 'weekly-tue', 'weekly-wed', 'weekly-thu', 'weekly-fri', 'weekly-sat', 'weekly-sun', 'weekly-notes'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
+                } else if (currentTab === 'todo') {
+                    localStorage.removeItem('atelier_todoview_2026');
+                    initTodoViewLists();
+                    document.getElementById('todo-notes-box').value = '';
+                    document.getElementById('todo-reminder-box').value = '';
+                } else if (currentTab === 'journal') {
+                    localStorage.removeItem('atelier_journal_2026');
+                    initJournalBrainDump();
+                    ['journal-mood', 'journal-inspired', 'journal-purpose', 'journal-affirmation', 'journal-movement', 'journal-gratitude-1', 'journal-gratitude-2', 'journal-gratitude-3', 'journal-daily-goal', 'journal-reflection'].forEach(id => {
+                        document.getElementById(id).value = '';
+                    });
+                }
+            }
+        }
+
+        // Initialize on window load
+        window.onload = function() {
+            loadMonthlyData();
+            loadWeeklyData();
+            
+            initTodoViewLists();
+            loadTodoViewData();
+
+            initJournalBrainDump();
+            loadJournalData();
+            setJournalDay('F');
+        };
+    </script>
+</body>
+</html>
